@@ -2,9 +2,9 @@
   <div class="article-card card">
     <!-- Заголовок статьи -->
     <h3 class="article-title">
-      <a :href="article.url" target="_blank" rel="noopener">
+      <router-link :to="`/pub/${article.id}`">
         {{ article.title }}
-      </a>
+      </router-link>
     </h3>
     
     <!-- Авторы -->
@@ -59,15 +59,10 @@
     
     <!-- Действия -->
     <div class="article-actions">
-      <a 
-        :href="article.url" 
-        target="_blank" 
-        rel="noopener"
-        class="btn btn-primary icon-btn"
-      >
+      <router-link :to="`/pub/${article.id}`" class="btn btn-primary icon-btn">
         <svg class="icon" width="18" height="18" aria-hidden="true"><use href="#icon-file" /></svg>
-        Читать статью
-      </a>
+        Открыть
+      </router-link>
       <button 
         v-if="article.pdfUrl"
         @click="downloadPDF"

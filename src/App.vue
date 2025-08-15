@@ -27,6 +27,15 @@
             <router-link to="/authors" class="nav-link" @click="closeMobileMenu">
               Авторы
             </router-link>
+            <router-link to="/team" class="nav-link" @click="closeMobileMenu">
+              Команда
+            </router-link>
+            <router-link to="/impact" class="nav-link" @click="closeMobileMenu">
+              Impact
+            </router-link>
+            <router-link to="/contact" class="nav-link" @click="closeMobileMenu">
+              Контакты
+            </router-link>
           </div>
           
           <!-- Мобильное меню -->

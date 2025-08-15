@@ -1,37 +1,29 @@
 <template>
   <div class="home-page">
     <CurveDivider />
-    <!-- Hero секция -->
+    <!-- Hero: командная витрина -->
     <section class="hero-section">
       <div class="container">
         <div class="hero-content">
-          <h1 class="hero-title">
-            Онтологии и графы знаний: практики и кейсы
-          </h1>
-          <p class="hero-subtitle">
-            Управление знаниями, семантическая интеграция и интеллектуальные приложения
-          </p>
+          <h1 class="hero-title">Исследовательская группа по онтологиям</h1>
+          <p class="hero-subtitle">Графы знаний, семантическая интеграция и интеллектуальные сервисы</p>
           <div class="hero-actions">
-            <router-link to="/projects" class="btn btn-primary icon-btn">
-              <svg class="icon" width="18" height="18" aria-hidden="true"><use href="#icon-rocket" /></svg>
-              Начать проект
+            <router-link to="/team" class="btn btn-primary icon-btn">
+              <svg class="icon" width="18" height="18" aria-hidden="true"><use href="#icon-users" /></svg>
+              Наша команда
             </router-link>
             <router-link to="/science" class="btn btn-secondary icon-btn">
               <svg class="icon" width="18" height="18" aria-hidden="true"><use href="#icon-book" /></svg>
-              Изучить науку
+              Публикации
             </router-link>
           </div>
         </div>
-        
-        <!-- Герой: общий инфо-фокус -->
-        <div class="hero-stats" aria-describedby="hero-subline">
-          <div class="stat-item">
-            <div class="stat-number">
-              <svg class="icon" width="18" height="18" aria-hidden="true"><use href="#icon-rocket" /></svg>
-              Графы знаний
-            </div>
-            <div class="stat-label">применение в поиске, аналитике, автоматизации</div>
-          </div>
+
+        <!-- KPI -->
+        <div class="kpis">
+          <div class="kpi"><div class="num">5</div><div class="label">экспертов</div></div>
+          <div class="kpi"><div class="num">2+</div><div class="label">публикаций</div></div>
+          <div class="kpi"><div class="num">10+</div><div class="label">навыков</div></div>
         </div>
       </div>
     </section>
@@ -306,27 +298,31 @@
       </div>
     </section>
 
-    <!-- Публикации и CTA -->
+    <!-- Избранные публикации и команда -->
     <section class="section">
       <div class="container">
         <div class="section-header">
-          <h2 id="publications">Публикации</h2>
-          <p id="publications" class="section-subtitle">Подборка ключевых публикаций доступна в разделе «Наука».</p>
+          <h2>Избранное</h2>
+          <p class="section-subtitle">Пара публикаций и лица команды</p>
         </div>
-        <div class="applications-grid">
-          <div class="application-item">
-            <h3>Графы знаний в индустрии</h3>
-            <ul>
-              <li>Практики построения и применения</li>
-              <li>Интеграция и аналитика</li>
+        <div class="featured-grid">
+          <div class="card block">
+            <h3>Публикации</h3>
+            <ul class="mini-list">
+              <li v-for="p in featuredPublications" :key="p.id">
+                <router-link :to="`/pub/${p.id}`">{{ p.title }}</router-link>
+                <span class="meta">{{ p.venue }} · {{ p.year }}</span>
+              </li>
             </ul>
           </div>
-          <div class="application-item">
-            <h3>Семантический веб и онтологии</h3>
-            <ul>
-              <li>Методологии моделирования</li>
-              <li>Сценарии в ИИ и поиске</li>
-            </ul>
+          <div class="card block">
+            <h3>Команда</h3>
+            <div class="faces">
+              <router-link v-for="m in featuredMembers" :key="m.id" :to="`/team/${m.slug}`" class="face">
+                <img :src="m.avatar || '/default-avatar.svg'" :alt="m.name" />
+                <div class="face-name">{{ m.name }}</div>
+              </router-link>
+            </div>
           </div>
         </div>
       </div>
@@ -357,12 +353,16 @@
 <script>
 import CurveDivider from '../components/CurveDivider.vue'
 import CitationBadge from '../components/CitationBadge.vue'
+import { publications as cmsPublications } from '../data/publications.js'
+import { team as cmsTeam } from '../data/team.js'
 
 export default {
   name: 'HomePage',
   components: { CurveDivider, CitationBadge },
   setup() {
-    return {}
+    const featuredPublications = cmsPublications.slice(0, 2)
+    const featuredMembers = cmsTeam.slice(0, 4)
+    return { featuredPublications, featuredMembers }
   }
 }
 </script>
@@ -405,6 +405,11 @@ export default {
   max-width: 600px;
   margin: 0 auto;
 }
+
+.kpis { display: flex; gap: 1.5rem; margin-top: 2rem; flex-wrap: wrap; }
+.kpi { background: var(--bg-primary); padding: 1rem 1.25rem; border-radius: var(--radius-md); box-shadow: var(--shadow-sm); }
+.kpi .num { font-weight: 800; font-size: 1.5rem; color: var(--primary-color); }
+.kpi .label { color: var(--text-secondary); font-size: .875rem; }
 
 .stat-item {
   text-align: center;
@@ -490,6 +495,15 @@ export default {
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
 }
+
+.featured-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem; }
+.block h3 { color: var(--primary-color); margin-bottom: .75rem; }
+.mini-list { list-style: none; padding: 0; margin: 0; display: grid; gap: .5rem; }
+.mini-list .meta { display: inline-block; margin-left: .5rem; color: var(--text-secondary); font-size: .85rem; }
+.faces { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: .75rem; }
+.face { text-align: center; text-decoration: none; }
+.face img { width: 80px; height: 80px; object-fit: cover; border-radius: 50%; border: 2px solid var(--primary-color); }
+.face-name { margin-top: .5rem; color: var(--text-primary); font-size: .9rem; }
 
 .application-item {
   background: var(--bg-primary);

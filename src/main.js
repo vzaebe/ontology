@@ -9,6 +9,11 @@ import ProjectsPage from './pages/ProjectsPage.vue'
 import ResourcesPage from './pages/ResourcesPage.vue'
 import SciencePage from './pages/SciencePage.vue'
 import AuthorsPage from './pages/AuthorsPage.vue'
+import TeamPage from './pages/TeamPage.vue'
+import MemberProfilePage from './pages/MemberProfilePage.vue'
+import ImpactPage from './pages/ImpactPage.vue'
+import ContactPage from './pages/ContactPage.vue'
+import PublicationPage from './pages/PublicationPage.vue'
 
 // Конфигурация роутера
 const router = createRouter({
@@ -19,6 +24,24 @@ const router = createRouter({
       name: 'home',
       component: HomePage,
       meta: { title: 'Главная - Ontology.ru' }
+    },
+    {
+      path: '/pub/:id',
+      name: 'publication',
+      component: PublicationPage,
+      meta: { title: 'Публикация - Ontology.ru' }
+    },
+    {
+      path: '/impact',
+      name: 'impact',
+      component: ImpactPage,
+      meta: { title: 'Impact - Ontology.ru' }
+    },
+    {
+      path: '/contact',
+      name: 'contact',
+      component: ContactPage,
+      meta: { title: 'Контакты - Ontology.ru' }
     },
     {
       path: '/projects',
@@ -43,6 +66,19 @@ const router = createRouter({
       name: 'authors',
       component: AuthorsPage,
       meta: { title: 'Авторы - Ontology.ru' }
+    }
+    ,
+    {
+      path: '/team',
+      name: 'team',
+      component: TeamPage,
+      meta: { title: 'Команда - Ontology.ru' }
+    },
+    {
+      path: '/team/:slug',
+      name: 'member',
+      component: MemberProfilePage,
+      meta: { title: 'Профиль участника - Ontology.ru' }
     }
   ]
 })
