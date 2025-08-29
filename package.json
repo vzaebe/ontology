@@ -16,7 +16,12 @@
     "echarts": "^5.5.0",
     "vue-echarts": "^6.6.8",
     "qrcode.vue": "^3.5.1",
-    "dayjs": "^1.11.13"
+    "dayjs": "^1.11.13",
+    "n3": "^1.17.0",
+    "rdf-validate-shacl": "^0.5.0",
+    "vis-network": "^9.1.0",
+    "monaco-editor": "^0.47.0",
+    "yasgui": "^4.2.29"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.0",

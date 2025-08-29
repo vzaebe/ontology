@@ -1,5 +1,5 @@
-// Team members and shared publications mapping
-// Member model: { id, slug, name, title, role, email, phone, avatar, location, socials{}, interests[], skills[], joined, publications[], links[] }
+// Team members and shared publications mapping  
+// Member model: { id, slug, name, title, role, email, phone, avatar, location, socials{}, interests[], skills[], joined, publications[], links[], bio_short, education, projects_brief }
 
 export const team = [
   {
@@ -21,7 +21,10 @@ export const team = [
     skills: ['OWL', 'RDF', 'SPARQL', 'GraphDB', 'Python'],
     joined: '2021-03-15',
     publications: ['pub-aistep-2025-ont-asu', 'pub-eiks-2024-xml2owl'],
-    links: [{ label: 'Лаборатория', url: '#' }]
+    links: [{ label: 'Лаборатория', url: '#' }],
+    bio_short: 'Я — Team Lead. Окончил МГУ, Факультет ВМК, 2015. Занимаюсь онтологиями и автоматизацией. Интересы: графы знаний, SPARQL.',
+    education: 'МГУ им. М.В. Ломоносова, Факультет ВМК, 2015',
+    projects_brief: ['Онтология предметной области (пилот)', 'API графа знаний']
   },
   {
     id: 'm2',
@@ -38,7 +41,10 @@ export const team = [
     skills: ['RDFS', 'OWL API', 'Jena', 'Java'],
     joined: '2022-06-01',
     publications: ['pub-eiks-2024-xml2owl'],
-    links: []
+    links: [],
+    bio_short: 'Я — Architect. Окончила СПбГУ, Математико-механический факультет, 2019. Занимаюсь семантическим вебом и каталогами данных. Интересы: OWL API, Jena.',
+    education: 'СПбГУ, Математико-механический факультет, 2019',
+    projects_brief: ['Каталог семантических данных', 'OWL-валидатор']
   },
   {
     id: 'm3',
@@ -55,7 +61,10 @@ export const team = [
     skills: ['SPARQL', 'RDF4J', 'ETL'],
     joined: '2023-01-10',
     publications: [],
-    links: []
+    links: [],
+    bio_short: 'Я — Researcher. Окончил МГТУ им. Баумана, Факультет информатики, 2020. Занимаюсь SPARQL и интеграцией данных. Интересы: RDF4J, ETL.',
+    education: 'МГТУ им. Н.Э. Баумана, Факультет информатики, 2020',
+    projects_brief: ['ETL-конвейер для RDF', 'SPARQL-оптимизатор']
   },
   {
     id: 'm4',
@@ -72,7 +81,10 @@ export const team = [
     skills: ['OWL', 'UML', 'BPMN'],
     joined: '2020-09-01',
     publications: [],
-    links: []
+    links: [],
+    bio_short: 'Я — Advisor. Окончил МАИ, Факультет прикладной математики, 2005. Занимаюсь управлением знаниями и промышленной автоматизацией. Интересы: OWL, BPMN.',
+    education: 'МАИ, Факультет прикладной математики, 2005',
+    projects_brief: ['Модель бизнес-процессов', 'OWL-онтология предприятия']
   },
   {
     id: 'm5',
@@ -89,7 +101,10 @@ export const team = [
     skills: ['Python', 'RDF', 'Neo4j'],
     joined: '2024-02-01',
     publications: [],
-    links: []
+    links: [],
+    bio_short: 'Я — Engineer. Окончил МИФИ, Факультет кибернетики, 2022. Занимаюсь ЖЦ оборудования и RDF. Интересы: Python, Neo4j.',
+    education: 'НИЯУ МИФИ, Факультет кибернетики, 2022',
+    projects_brief: ['Граф жизненного цикла', 'Python-коннектор к Neo4j']
   }
 ]
 

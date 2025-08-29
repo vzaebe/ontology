@@ -1,271 +1,129 @@
 <template>
   <div class="science-page">
-    <CurveDivider />
-    <!-- Заголовок страницы -->
-    <section class="page-header">
+    <!-- Hero секция -->
+    <section class="hero-section">
       <div class="container">
-        <h1>Научные публикации</h1>
-        <p class="page-subtitle">
-          Статьи и исследования об онтологиях, графах знаний и семантических технологиях
+        <h1 class="hero-title">Научные публикации</h1>
+        <p class="hero-subtitle">
+          Исследования в области онтологий, графов знаний и семантических технологий
         </p>
       </div>
     </section>
 
-    <!-- Фильтры -->
-    <section class="filters-section">
+    <!-- Основной контент -->
+    <section class="content-section">
       <div class="container">
-        <div class="filters">
-          <div class="filter-group">
-            <label for="journal-filter">Журнал:</label>
-            <select 
-              id="journal-filter" 
-              v-model="filters.journal"
-              class="filter-select"
-            >
-              <option value="">Все журналы</option>
-              <option value="Applied Ontology">Applied Ontology</option>
-              <option value="Journal of Web Semantics">Journal of Web Semantics</option>
-              <option value="Semantic Web Journal">Semantic Web Journal</option>
-              <option value="IEEE Transactions">IEEE Transactions</option>
-              <option value="ACM Transactions">ACM Transactions</option>
-            </select>
-          </div>
-          
-          <div class="filter-group">
-            <label for="year-filter">Год:</label>
-            <select 
-              id="year-filter" 
-              v-model="filters.year"
-              class="filter-select"
-            >
-              <option value="">Все годы</option>
-              <option value="2024">2024</option>
-              <option value="2023">2023</option>
-              <option value="2022">2022</option>
-              <option value="2021">2021</option>
-              <option value="2020">2020</option>
-            </select>
-          </div>
-          
-          <div class="filter-group">
-            <label for="search-filter">Поиск:</label>
-            <input 
-              id="search-filter"
-              v-model="filters.search"
-              type="text"
-              placeholder="Поиск по названию, авторам или ключевым словам..."
-              class="filter-input"
-            />
-          </div>
-          
-          <button 
-            @click="clearFilters"
-            class="btn btn-secondary"
-          >
-            🗑️ Очистить фильтры
-          </button>
-        </div>
-      </div>
-    </section>
+        <!-- Фильтры -->
+        <PublicationFilters
+          v-model="filters"
+          :publications="allPublications"
+          @filter-change="handleFilterChange"
+        />
 
-    <!-- Статистика публикаций -->
-    <section class="stats-section">
-      <div class="container">
-        <h2>Статистика публикаций</h2>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon">📊</div>
-            <div class="stat-number">{{ totalArticles }}</div>
-            <div class="stat-label">Всего статей</div>
-          </div>
-          
-          <div class="stat-card">
-            <div class="stat-icon">📚</div>
-            <div class="stat-number">{{ uniqueJournals }}</div>
-            <div class="stat-label">Журналов</div>
-          </div>
-          
-          <div class="stat-card">
-            <div class="stat-icon">👥</div>
-            <div class="stat-number">{{ uniqueAuthors }}</div>
-            <div class="stat-label">Авторов</div>
-          </div>
-          
-          <div class="stat-card">
-            <div class="stat-icon">📈</div>
-            <div class="stat-number">{{ averageCitations }}</div>
-            <div class="stat-label">Среднее цитирование</div>
-          </div>
-        </div>
-      </div>
-    </section>
+        <!-- Статистика -->
+        <PublicationStats
+          :publications="filteredPublications"
+          :show-chart="true"
+          :show-top-venues="true"
+          :show-trends="true"
+          @year-click="handleYearClick"
+          @venue-click="handleVenueClick"
+          @tag-click="handleTagClick"
+        />
 
-    <!-- Список статей (списком) -->
-    <section class="articles-section list-variant">
-      <div class="container">
-        <div class="articles-header">
-          <h2 id="publications">Найдено статей: {{ filteredArticles.length }}</h2>
-          <div class="sort-controls">
-            <label for="sort-select">Сортировка:</label>
-            <select 
-              id="sort-select" 
-              v-model="sortBy"
-              class="sort-select"
+        <!-- Популярные журналы (P1) -->
+        <div class="popular-journals" v-if="showPopularJournals">
+          <h3 class="journals-title">Популярные журналы</h3>
+          <div class="journals-list">
+            <button
+              v-for="journal in popularJournals"
+              :key="journal.name"
+              class="journal-badge"
+              @click="filterByVenue(journal.name)"
+              :title="`${journal.count} публикаций в ${journal.name}`"
             >
-              <option value="citations">По цитированию</option>
-              <option value="year">По году</option>
-              <option value="title">По названию</option>
-              <option value="impact">По импакт-фактору</option>
-            </select>
-          </div>
-        </div>
-        
-        <ul class="articles-list">
-          <li 
-            v-for="article in filteredArticles" 
-            :key="article.id"
-            class="article-row"
-          >
-            <div class="article-row-main">
-              <router-link :to="`/pub/${article.id}`" class="article-link">
-                {{ article.title }}
-              </router-link>
-              <span class="article-meta-inline">
-                <span class="journal">{{ article.journal }}</span>
-                <span class="year">{{ article.year }}</span>
-                <span v-if="article.metrics?.citations" class="citations">📊 {{ article.metrics.citations }}</span>
-                <span v-if="article.metrics?.impactFactor" class="impact">⭐ {{ article.metrics.impactFactor }}</span>
-              </span>
-            </div>
-            <div v-if="article.authors?.length" class="article-authors-inline">
-              {{ article.authors.join(', ') }}
-            </div>
-          </li>
-        </ul>
-        
-        <!-- Пагинация -->
-        <div class="pagination" v-if="totalPages > 1">
-          <button 
-            @click="currentPage--"
-            :disabled="currentPage === 1"
-            class="pagination-btn"
-          >
-            ← Предыдущая
-          </button>
-          
-          <div class="page-numbers">
-            <button 
-              v-for="page in visiblePages" 
-              :key="page"
-              @click="currentPage = page"
-              class="page-btn"
-              :class="{ 'active': currentPage === page }"
-            >
-              {{ page }}
+              <span class="journal-name">{{ journal.name }}</span>
+              <span class="journal-count">{{ journal.count }}</span>
             </button>
           </div>
-          
-          <button 
-            @click="currentPage++"
-            :disabled="currentPage === totalPages"
-            class="pagination-btn"
-          >
-            Следующая →
-          </button>
         </div>
-      </div>
-    </section>
 
-    <!-- Популярные журналы -->
-    <section class="journals-section">
-      <div class="container">
-        <h2>Популярные журналы</h2>
-        <div class="journals-grid">
+        <!-- Список публикаций -->
+        <div class="publications-content">
+          <div class="publications-header">
+            <h2>Публикации</h2>
+            <div class="view-controls">
+              <button
+                class="view-btn"
+                :class="{ active: viewMode === 'grid' }"
+                @click="viewMode = 'grid'"
+                aria-label="Сетка"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <rect x="3" y="3" width="7" height="7"/>
+                  <rect x="14" y="3" width="7" height="7"/>
+                  <rect x="3" y="14" width="7" height="7"/>
+                  <rect x="14" y="14" width="7" height="7"/>
+                </svg>
+              </button>
+              <button
+                class="view-btn"
+                :class="{ active: viewMode === 'list' }"
+                @click="viewMode = 'list'"
+                aria-label="Список"
+              >
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <line x1="8" y1="6" x2="21" y2="6"/>
+                  <line x1="8" y1="12" x2="21" y2="12"/>
+                  <line x1="8" y1="18" x2="21" y2="18"/>
+                  <line x1="3" y1="6" x2="3.01" y2="6"/>
+                  <line x1="3" y1="12" x2="3.01" y2="12"/>
+                  <line x1="3" y1="18" x2="3.01" y2="18"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Пустое состояние -->
+          <div v-if="!filteredPublications.length" class="empty-state">
+            <div class="empty-icon">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1">
+                <circle cx="11" cy="11" r="8"/>
+                <path d="m21 21-4.35-4.35"/>
+              </svg>
+            </div>
+            <h3>По выбранным фильтрам ничего не найдено</h3>
+            <p>Попробуйте изменить параметры поиска или сбросить фильтры</p>
+            <button @click="resetFilters" class="btn btn-primary">
+              Сбросить фильтры
+            </button>
+          </div>
+
+          <!-- Сетка публикаций -->
           <div 
-            v-for="journal in popularJournals" 
-            :key="journal.name"
-            class="journal-card"
+            v-else
+            class="publications-grid"
+            :class="{ 'list-view': viewMode === 'list' }"
           >
-            <div class="journal-header">
-              <h3>{{ journal.name }}</h3>
-            <div class="journal-impact">
-              <svg class="icon" width="14" height="14" aria-hidden="true"><use href="#icon-star"/></svg>
-              IF: {{ journal.impactFactor }}
-            </div>
-            </div>
-            <p class="journal-description">{{ journal.description }}</p>
-            <div class="journal-stats">
-              <div class="journal-stat">
-                <span class="stat-label">Статей:</span>
-                <span class="stat-value">{{ journal.articlesCount }}</span>
-              </div>
-              <div class="journal-stat">
-                <span class="stat-label">Цитирований:</span>
-                <span class="stat-value">{{ journal.totalCitations }}</span>
-              </div>
-            </div>
-            <a :href="journal.url" target="_blank" rel="noopener" class="btn btn-primary">
-              Перейти на сайт
-            </a>
+            <PublicationCard
+              v-for="publication in displayedPublications"
+              :key="publication.id"
+              :publication="publication"
+              :compact="viewMode === 'list'"
+              @tag-click="handleTagClick"
+              @article-click="handleArticleClick"
+            />
           </div>
-        </div>
-      </div>
-    </section>
 
-    <!-- Тренды исследований (приземленная версия) -->
-    <section class="trends-section">
-      <div class="container">
-        <h2>Тренды исследований</h2>
-        <div class="trends-grid">
-          <div class="trend-card">
-            <h3><svg class="icon" width="18" height="18" aria-hidden="true"><use href="#icon-chart" /></svg> Популярные темы (практика)</h3>
-            <div class="trend-tags">
-              <span class="trend-tag">Семантическая индексация</span>
-              <span class="trend-tag">Каталоги данных</span>
-              <span class="trend-tag">Онтологии требований</span>
-              <span class="trend-tag">Интеграция CAD/PLM</span>
-              <span class="trend-tag">Объяснимый ИИ</span>
-            </div>
-          </div>
-          
-          <div class="trend-card">
-            <h3><svg class="icon" width="18" height="18" aria-hidden="true"><use href="#icon-trending-up" /></svg> Растущие направления (авиастроение)</h3>
-            <div class="trend-list">
-              <div class="trend-item">
-                <span class="trend-name">Автоматизация проектирования</span>
-                <span class="trend-growth">+45%</span>
-              </div>
-              <div class="trend-item">
-                <span class="trend-name">Семантическая интеграция</span>
-                <span class="trend-growth">+32%</span>
-              </div>
-              <div class="trend-item">
-                <span class="trend-name">Управление знаниями</span>
-                <span class="trend-growth">+28%</span>
-              </div>
-            </div>
-          </div>
-          
-          <div class="trend-card">
-            <h3>🌍 Географическое распределение</h3>
-            <div class="trend-list">
-              <div class="trend-item">
-                <span class="trend-name">США</span>
-                <span class="trend-growth">35%</span>
-              </div>
-              <div class="trend-item">
-                <span class="trend-name">Европа</span>
-                <span class="trend-growth">30%</span>
-              </div>
-              <div class="trend-item">
-                <span class="trend-name">Азия</span>
-                <span class="trend-growth">25%</span>
-              </div>
-              <div class="trend-item">
-                <span class="trend-name">Россия</span>
-                <span class="trend-growth">10%</span>
-              </div>
-            </div>
+          <!-- Пагинация -->
+          <div v-if="hasMorePublications" class="pagination">
+            <button
+              @click="loadMore"
+              class="btn btn-secondary load-more-btn"
+              :disabled="loading"
+            >
+              {{ loading ? 'Загрузка...' : `Показать ещё (${remainingCount})` }}
+            </button>
           </div>
         </div>
       </div>
@@ -274,309 +132,391 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue'
-import ArticleCard from '../components/ArticleCard.vue'
-import CurveDivider from '../components/CurveDivider.vue'
-import { articles as unifiedArticles } from '../data/articles.js'
+import { ref, computed, watch, onMounted } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
+import PublicationCard from '../components/PublicationCard.vue'
+import PublicationFilters from '../components/PublicationFilters.vue'
+import PublicationStats from '../components/PublicationStats.vue'
+import { publications } from '../data/publications.js'
 
 export default {
   name: 'SciencePage',
   components: {
-    ArticleCard,
-    CurveDivider
+    PublicationCard,
+    PublicationFilters,
+    PublicationStats
   },
   setup() {
-    // Состояние фильтров
-    const filters = ref({
-      journal: '',
-      year: '',
-      search: ''
-    })
-    
-    // Сортировка
-    const sortBy = ref('citations')
-    
-    // Пагинация
+    const route = useRoute()
+    const router = useRouter()
+
+    // Состояние
+    const allPublications = ref(publications)
+    const viewMode = ref('grid')
+    const loading = ref(false)
+    const itemsPerPage = 12
     const currentPage = ref(1)
-    const itemsPerPage = ref(6)
-    
-    // Единый список статей
-    const articles = ref(unifiedArticles)
-    
-    // Популярные журналы
-    const popularJournals = ref([
-      {
-        name: 'Applied Ontology',
-        impactFactor: '2.8',
-        description: 'Международный журнал, посвященный прикладным аспектам онтологий',
-        articlesCount: 45,
-        totalCitations: 1250,
-        url: 'https://content.iospress.com/journals/applied-ontology'
-      },
-      {
-        name: 'Journal of Web Semantics',
-        impactFactor: '3.2',
-        description: 'Ведущий журнал по семантическому вебу и связанным технологиям',
-        articlesCount: 38,
-        totalCitations: 2100,
-        url: 'https://www.sciencedirect.com/journal/journal-of-web-semantics'
-      },
-      {
-        name: 'Semantic Web Journal',
-        impactFactor: '2.9',
-        description: 'Журнал по семантическому вебу и связанным технологиям',
-        articlesCount: 32,
-        totalCitations: 980,
-        url: 'https://content.iospress.com/journals/semantic-web'
-      },
-      {
-        name: 'IEEE Transactions on Industrial Informatics',
-        impactFactor: '4.5',
-        description: 'Журнал по промышленной информатике и автоматизации',
-        articlesCount: 28,
-        totalCitations: 3200,
-        url: 'https://ieeexplore.ieee.org/xpl/RecentIssue.jsp?punumber=9424'
+
+    // Фильтры из URL или по умолчанию
+    const filters = ref({
+      types: route.query.types ? route.query.types.split(',') : [],
+      years: route.query.years ? route.query.years.split(',').map(Number) : [],
+      venue: route.query.venue || '',
+      tags: route.query.tags ? route.query.tags.split(',') : [],
+      search: route.query.search || '',
+      sort: route.query.sort || 'year-desc'
+    })
+
+    // Вычисляемые свойства
+    const filteredPublications = computed(() => {
+      let result = [...allPublications.value]
+
+      // Фильтр по типу
+      if (filters.value.types.length) {
+        result = result.filter(pub => filters.value.types.includes(pub.type))
       }
-    ])
-    
-    // Фильтрация статей
-    const filteredArticles = computed(() => {
-      return articles.value.filter(article => {
-        // Фильтр по журналу
-        if (filters.value.journal && article.journal !== filters.value.journal) {
-          return false
-        }
-        
-        // Фильтр по году
-        if (filters.value.year && article.year !== parseInt(filters.value.year)) {
-          return false
-        }
-        
-        // Фильтр по поиску
-        if (filters.value.search) {
-          const searchLower = filters.value.search.toLowerCase()
-          const titleMatch = article.title.toLowerCase().includes(searchLower)
-          const authorsMatch = article.authors.some(author => 
-            author.toLowerCase().includes(searchLower)
+
+      // Фильтр по году
+      if (filters.value.years.length) {
+        result = result.filter(pub => filters.value.years.includes(pub.year))
+      }
+
+      // Фильтр по площадке
+      if (filters.value.venue) {
+        result = result.filter(pub => pub.venue === filters.value.venue)
+      }
+
+      // Фильтр по тегам
+      if (filters.value.tags.length) {
+        result = result.filter(pub => 
+          pub.tags && filters.value.tags.some(tag => pub.tags.includes(tag))
+        )
+      }
+
+      // Поиск по названию
+      if (filters.value.search) {
+        const searchLower = filters.value.search.toLowerCase()
+        result = result.filter(pub => 
+          pub.title.toLowerCase().includes(searchLower) ||
+          pub.authors?.some(author => 
+            typeof author === 'string' 
+              ? author.toLowerCase().includes(searchLower)
+              : author.name?.toLowerCase().includes(searchLower)
           )
-          const keywordsMatch = article.keywords.some(keyword => 
-            keyword.toLowerCase().includes(searchLower)
-          )
-          if (!titleMatch && !authorsMatch && !keywordsMatch) {
-            return false
-          }
+        )
+      }
+
+      // Сортировка
+      switch (filters.value.sort) {
+        case 'year-desc':
+          result.sort((a, b) => b.year - a.year)
+          break
+        case 'year-asc':
+          result.sort((a, b) => a.year - b.year)
+          break
+        case 'venue':
+          result.sort((a, b) => a.venue.localeCompare(b.venue))
+          break
+        case 'type':
+          result.sort((a, b) => a.type.localeCompare(b.type))
+          break
+      }
+
+      return result
+    })
+
+    const displayedPublications = computed(() => {
+      const endIndex = currentPage.value * itemsPerPage
+      return filteredPublications.value.slice(0, endIndex)
+    })
+
+    const hasMorePublications = computed(() => {
+      return displayedPublications.value.length < filteredPublications.value.length
+    })
+
+    const remainingCount = computed(() => {
+      return filteredPublications.value.length - displayedPublications.value.length
+    })
+
+    const popularJournals = computed(() => {
+      const venueCounts = {}
+      allPublications.value.forEach(pub => {
+        if (pub.venue) {
+          venueCounts[pub.venue] = (venueCounts[pub.venue] || 0) + 1
         }
-        
-        return true
       })
+
+      return Object.entries(venueCounts)
+        .map(([name, count]) => ({ name, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 6)
     })
-    
-    // Сортировка
-    const sortedArticles = computed(() => {
-      const sorted = [...filteredArticles.value]
-      
-      switch (sortBy.value) {
-        case 'citations':
-          return sorted.sort((a, b) => b.metrics.citations - a.metrics.citations)
-        case 'year':
-          return sorted.sort((a, b) => b.year - a.year)
-        case 'title':
-          return sorted.sort((a, b) => a.title.localeCompare(b.title))
-        case 'impact':
-          return sorted.sort((a, b) => b.metrics.impactFactor - a.metrics.impactFactor)
-        default:
-          return sorted
-      }
+
+    const showPopularJournals = computed(() => {
+      return popularJournals.value.length > 0
     })
-    
-    // Пагинация
-    const totalPages = computed(() => {
-      return Math.ceil(sortedArticles.value.length / itemsPerPage.value)
-    })
-    
-    const paginatedArticles = computed(() => {
-      const start = (currentPage.value - 1) * itemsPerPage.value
-      const end = start + itemsPerPage.value
-      return sortedArticles.value.slice(start, end)
-    })
-    
-    const visiblePages = computed(() => {
-      const pages = []
-      const start = Math.max(1, currentPage.value - 2)
-      const end = Math.min(totalPages.value, currentPage.value + 2)
-      
-      for (let i = start; i <= end; i++) {
-        pages.push(i)
-      }
-      
-      return pages
-    })
-    
-    // Статистика
-    const totalArticles = computed(() => articles.value.length)
-    
-    const uniqueJournals = computed(() => {
-      const journals = new Set(articles.value.map(a => a.journal))
-      return journals.size
-    })
-    
-    const uniqueAuthors = computed(() => {
-      const authors = new Set()
-      articles.value.forEach(article => {
-        article.authors.forEach(author => authors.add(author))
-      })
-      return authors.size
-    })
-    
-    const averageCitations = computed(() => {
-      const total = articles.value.reduce((sum, article) => sum + article.metrics.citations, 0)
-      return Math.round(total / articles.value.length)
-    })
-    
+
     // Методы
-    const clearFilters = () => {
+    const updateURL = () => {
+      const query = {}
+      
+      if (filters.value.types.length) query.types = filters.value.types.join(',')
+      if (filters.value.years.length) query.years = filters.value.years.join(',')
+      if (filters.value.venue) query.venue = filters.value.venue
+      if (filters.value.tags.length) query.tags = filters.value.tags.join(',')
+      if (filters.value.search) query.search = filters.value.search
+      if (filters.value.sort !== 'year-desc') query.sort = filters.value.sort
+
+      router.replace({ query })
+    }
+
+    const handleFilterChange = () => {
+      currentPage.value = 1
+      updateURL()
+    }
+
+    const handleYearClick = (year) => {
+      if (!filters.value.years.includes(year)) {
+        filters.value.years.push(year)
+        handleFilterChange()
+      }
+    }
+
+    const handleVenueClick = (venue) => {
+      filters.value.venue = venue
+      handleFilterChange()
+    }
+
+    const handleTagClick = (tag) => {
+      if (!filters.value.tags.includes(tag)) {
+        filters.value.tags.push(tag)
+        handleFilterChange()
+      }
+    }
+
+    const filterByVenue = (venue) => {
+      filters.value.venue = venue
+      handleFilterChange()
+    }
+
+    const resetFilters = () => {
       filters.value = {
-        journal: '',
-        year: '',
-        search: ''
+        types: [],
+        years: [],
+        venue: '',
+        tags: [],
+        search: '',
+        sort: 'year-desc'
       }
       currentPage.value = 1
+      updateURL()
     }
-    
+
+    const loadMore = () => {
+      loading.value = true
+      // Симуляция загрузки
+      setTimeout(() => {
+        currentPage.value++
+        loading.value = false
+      }, 300)
+    }
+
+    const handleArticleClick = (publication) => {
+      // Открываем страницу публикации внутри сайта
+      router.push(`/publications/${publication.slug}`)
+    }
+
+    // Наблюдение за изменениями URL
+    watch(() => route.query, (newQuery) => {
+      filters.value = {
+        types: newQuery.types ? newQuery.types.split(',') : [],
+        years: newQuery.years ? newQuery.years.split(',').map(Number) : [],
+        venue: newQuery.venue || '',
+        tags: newQuery.tags ? newQuery.tags.split(',') : [],
+        search: newQuery.search || '',
+        sort: newQuery.sort || 'year-desc'
+      }
+      currentPage.value = 1
+    }, { deep: true })
+
+    onMounted(() => {
+      // Обновление заголовка страницы
+      document.title = 'Научные публикации - Ontology.ru'
+    })
+
     return {
-      filters,
-      sortBy,
-      currentPage,
-      filteredArticles: paginatedArticles,
-      totalPages,
-      visiblePages,
+      allPublications,
+      filteredPublications,
+      displayedPublications,
+      hasMorePublications,
+      remainingCount,
       popularJournals,
-      totalArticles,
-      uniqueJournals,
-      uniqueAuthors,
-      averageCitations,
-      clearFilters
+      showPopularJournals,
+      filters,
+      viewMode,
+      loading,
+      handleFilterChange,
+      handleYearClick,
+      handleVenueClick,
+      handleTagClick,
+      filterByVenue,
+      resetFilters,
+      loadMore,
+      handleArticleClick
     }
   }
 }
 </script>
 
 <style scoped>
-/* Заголовок страницы */
-.page-header {
-  background: radial-gradient(600px 400px at 12% 20%, rgba(255,47,109,0.35), transparent 60%),
-              linear-gradient(135deg, #2a0b3b, #0a0d1f 70%);
+/* Hero секция */
+.hero-section {
+  background: var(--gradient-primary);
   color: white;
   padding: 4rem 0;
   text-align: center;
+  position: relative;
+  overflow: hidden;
 }
 
-.page-header h1 {
-  font-size: 3rem;
+.hero-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 20% 80%, rgba(102, 126, 234, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 80% 20%, rgba(118, 75, 162, 0.2) 0%, transparent 50%),
+    radial-gradient(circle at 40% 40%, rgba(120, 119, 198, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.hero-title {
+  font-size: 2.5rem;
+  font-weight: 700;
   margin-bottom: 1rem;
+  line-height: 1.2;
+  position: relative;
+  z-index: 1;
 }
 
-.page-subtitle {
+.hero-subtitle {
   font-size: 1.25rem;
-  opacity: 0.9;
   max-width: 600px;
   margin: 0 auto;
+  opacity: 0.9;
+  line-height: 1.5;
+  position: relative;
+  z-index: 1;
 }
 
-/* Фильтры */
-.filters-section {
-  background: var(--bg-secondary);
-  padding: 2rem 0;
-  border-bottom: 1px solid var(--bg-tertiary);
+/* Контент */
+.content-section {
+  padding: 3rem 0;
+  background: var(--bg-primary);
+  min-height: 80vh;
+  position: relative;
+  overflow: hidden;
 }
 
-.filters {
-  display: flex;
-  gap: 2rem;
-  align-items: end;
-  flex-wrap: wrap;
+.content-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 70% 10%, rgba(102, 126, 234, 0.03) 0%, transparent 40%),
+    radial-gradient(circle at 30% 60%, rgba(118, 75, 162, 0.02) 0%, transparent 40%),
+    radial-gradient(circle at 90% 90%, rgba(120, 119, 198, 0.025) 0%, transparent 40%);
+  pointer-events: none;
 }
 
-.filter-group {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 1rem;
+  position: relative;
+  z-index: 1;
 }
 
-.filter-group label {
+/* Популярные журналы */
+.popular-journals {
+  background: var(--gradient-glass);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: var(--shadow-md);
+}
+
+.journals-title {
+  font-size: 1.25rem;
   font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+  text-align: center;
+}
+
+.journals-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: center;
+}
+
+.journal-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1.5rem;
+  background: rgba(102, 126, 234, 0.1);
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  color: inherit;
+  min-height: 44px;
+}
+
+.journal-badge:hover {
+  background: rgba(102, 126, 234, 0.2);
+  border-color: rgba(102, 126, 234, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.journal-name {
+  font-weight: 500;
   color: var(--text-primary);
   font-size: 0.875rem;
 }
 
-.filter-select,
-.filter-input {
-  padding: 0.75rem;
-  border: 1px solid var(--text-light);
-  border-radius: var(--radius-md);
-  background: var(--bg-primary);
-  font-size: 0.875rem;
-  min-width: 200px;
+.journal-count {
+  background: #667eea;
+  color: white;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
 }
 
-.filter-select:focus,
-.filter-input:focus {
-  outline: none;
-  border-color: var(--primary-color);
-  box-shadow: 0 0 0 3px rgba(30, 58, 138, 0.1);
-}
-
-/* Статистика */
-.stats-section {
-  padding: 4rem 0;
-  background: var(--bg-secondary);
-}
-
-.stats-section h2 {
-  text-align: center;
-  color: var(--primary-color);
-  margin-bottom: 3rem;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-  gap: 2rem;
-}
-
-.stat-card {
-  background: var(--bg-primary);
-  padding: 2rem;
+/* Контент публикаций */
+.publications-content {
+  background: var(--gradient-glass);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
   border-radius: var(--radius-lg);
-  text-align: center;
+  padding: 2rem;
   box-shadow: var(--shadow-md);
 }
 
-.stat-icon {
-  font-size: 3rem;
-  margin-bottom: 1rem;
-}
-
-.stat-number {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: var(--primary-color);
-  margin-bottom: 0.5rem;
-}
-
-.stat-label {
-  color: var(--text-secondary);
-  font-size: 0.875rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Статьи */
-.articles-section {
-  padding: 4rem 0;
-}
-
-.articles-header {
+.publications-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -585,295 +525,203 @@ export default {
   gap: 1rem;
 }
 
-.articles-header h2 {
-  color: var(--primary-color);
+.publications-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
   margin: 0;
 }
 
-.sort-controls {
+.view-controls {
+  display: flex;
+  gap: 0.5rem;
+  background: rgba(107, 114, 128, 0.1);
+  padding: 0.25rem;
+  border-radius: 8px;
+}
+
+.view-btn {
+  padding: 0.5rem;
+  background: none;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  transition: all 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 1rem;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
 }
 
-.sort-controls label {
-  font-weight: 600;
+.view-btn:hover {
+  background: rgba(255, 255, 255, 0.5);
   color: var(--text-primary);
-  font-size: 0.875rem;
 }
 
-.sort-select {
-  padding: 0.5rem;
-  border: 1px solid var(--text-light);
-  border-radius: var(--radius-md);
-  background: var(--bg-primary);
-  font-size: 0.875rem;
+.view-btn.active {
+  background: var(--gradient-glass);
+  color: var(--primary-color);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
-.articles-grid {
+/* Пустое состояние */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-secondary);
+}
+
+.empty-icon {
+  margin-bottom: 1.5rem;
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  font-size: 1.25rem;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  margin-bottom: 2rem;
+  max-width: 400px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* Сетка публикаций */
+.publications-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
   gap: 2rem;
-  margin-bottom: 3rem;
+}
+
+.publications-grid.list-view {
+  grid-template-columns: 1fr;
+  gap: 1rem;
 }
 
 /* Пагинация */
 .pagination {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
+  text-align: center;
   margin-top: 3rem;
 }
 
-.pagination-btn {
-  padding: 0.75rem 1.5rem;
-  border: 1px solid var(--text-light);
-  background: var(--bg-primary);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: all 0.2s ease;
+.load-more-btn {
+  min-width: 200px;
 }
 
-.pagination-btn:disabled {
-  opacity: 0.5;
+.load-more-btn:disabled {
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-.pagination-btn:not(:disabled):hover {
-  background: var(--bg-secondary);
-}
-
-.page-numbers {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.page-btn {
-  width: 3rem;
-  height: 3rem;
-  border: 1px solid var(--text-light);
-  background: var(--bg-primary);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: all 0.2s ease;
-  display: flex;
+/* Кнопки */
+.btn {
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-}
-
-.page-btn.active {
-  background: var(--primary-color);
-  color: white;
-  border-color: var(--primary-color);
-}
-
-.page-btn:hover:not(.active) {
-  background: var(--bg-secondary);
-}
-
-/* Журналы */
-.journals-section {
-  background: var(--bg-secondary);
-  padding: 4rem 0;
-}
-
-.journals-section h2 {
-  text-align: center;
-  color: var(--primary-color);
-  margin-bottom: 3rem;
-}
-
-.journals-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-}
-
-.journal-card {
-  background: var(--bg-primary);
-  padding: 2rem;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-}
-
-.journal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 1rem;
-}
-
-.journal-header h3 {
-  color: var(--primary-color);
-  margin: 0;
-}
-
-.journal-impact {
-  background: var(--accent-color);
-  color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-sm);
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
   font-weight: 600;
-  font-size: 0.875rem;
+  text-decoration: none;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+  font-size: 1rem;
+  min-height: 44px;
 }
 
-.journal-description {
-  color: var(--text-secondary);
-  margin-bottom: 1.5rem;
-  font-size: 0.875rem;
-}
-
-.journal-stats {
-  display: flex;
-  gap: 2rem;
-  margin-bottom: 1.5rem;
-}
-
-.journal-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 0.25rem;
-}
-
-.stat-label {
-  color: var(--text-secondary);
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.stat-value {
-  color: var(--text-primary);
-  font-weight: 600;
-  font-size: 1.125rem;
-}
-
-/* Тренды */
-.trends-section {
-  padding: 4rem 0;
-}
-
-.trends-section h2 {
-  text-align: center;
-  color: var(--primary-color);
-  margin-bottom: 3rem;
-}
-
-.trends-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
-}
-
-.trend-card {
-  background: var(--bg-primary);
-  padding: 2rem;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
-}
-
-.trend-card h3 {
-  color: var(--primary-color);
-  margin-bottom: 1.5rem;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.trend-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.trend-tag {
-  background: var(--accent-color);
+.btn-primary {
+  background: #667eea;
   color: white;
-  padding: 0.5rem 1rem;
-  border-radius: var(--radius-sm);
-  font-size: 0.875rem;
-  font-weight: 500;
 }
 
-.trend-list {
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+.btn-primary:hover {
+  background: #5a67d8;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
-.trend-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 0.75rem;
-  background: var(--bg-secondary);
-  border-radius: var(--radius-md);
+.btn-secondary {
+  background: transparent;
+  color: var(--primary-color);
+  border: 2px solid #667eea;
 }
 
-.trend-name {
-  color: var(--text-primary);
-  font-weight: 500;
-}
-
-.trend-growth {
-  background: var(--success-color);
+.btn-secondary:hover {
+  background: #667eea;
   color: white;
-  padding: 0.25rem 0.75rem;
-  border-radius: var(--radius-sm);
-  font-weight: 600;
-  font-size: 0.875rem;
+  transform: translateY(-2px);
 }
 
 /* Адаптивность */
 @media (max-width: 768px) {
-  .page-header h1 {
+  .hero-title {
     font-size: 2rem;
   }
   
-  .page-subtitle {
-    font-size: 1rem;
+  .hero-subtitle {
+    font-size: 1.125rem;
   }
   
-  .filters {
+  .content-section {
+    padding: 2rem 0;
+  }
+  
+  .publications-content {
+    padding: 1.5rem;
+  }
+  
+  .publications-header {
     flex-direction: column;
-    align-items: stretch;
+    align-items: flex-start;
   }
   
-  .filter-select,
-  .filter-input {
-    min-width: auto;
-  }
-  
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .articles-header {
-    flex-direction: column;
-    align-items: stretch;
-  }
-  
-  .articles-grid {
+  .publications-grid {
     grid-template-columns: 1fr;
+    gap: 1.5rem;
   }
   
-  .pagination {
+  .journals-list {
     flex-direction: column;
-    gap: 1rem;
+    align-items: center;
   }
   
-  .journals-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .trends-grid {
-    grid-template-columns: 1fr;
-  }
-  
-  .journal-stats {
-    flex-direction: column;
-    gap: 1rem;
+  .journal-badge {
+    width: 100%;
+    max-width: 300px;
+    justify-content: space-between;
   }
 }
-</style> 
+
+/* Поддержка prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  .journal-badge,
+  .view-btn,
+  .btn {
+    transition: none;
+  }
+  
+  .journal-badge:hover,
+  .btn:hover {
+    transform: none;
+  }
+}
+
+/* Высокий контраст */
+@media (prefers-contrast: high) {
+  .popular-journals,
+  .publications-content {
+    border-width: 2px;
+    border-color: var(--text-primary);
+  }
+  
+  .journals-title,
+  .publications-header h2 {
+    font-weight: 800;
+  }
+}
+</style>

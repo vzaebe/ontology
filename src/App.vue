@@ -12,30 +12,30 @@
           
           <!-- Навигационные ссылки -->
           <div class="nav-links" :class="{ 'nav-open': isMobileMenuOpen }">
-            <router-link to="/" class="nav-link" @click="closeMobileMenu">
-              Главная
+            <a href="#unified-ontology" class="nav-link" @click="closeMobileMenu">
+              О проекте
+            </a>
+            <router-link to="/how-it-works" class="nav-link" @click="closeMobileMenu">
+              Как это работает
             </router-link>
-            <router-link to="/projects" class="nav-link" @click="closeMobileMenu">
-              Проекты
-            </router-link>
-            <router-link to="/resources" class="nav-link" @click="closeMobileMenu">
-              Полезные ссылки
-            </router-link>
-            <router-link to="/science" class="nav-link" @click="closeMobileMenu">
-              Наука
-            </router-link>
-            <router-link to="/authors" class="nav-link" @click="closeMobileMenu">
-              Авторы
+            <a href="#business-benefits" class="nav-link" @click="closeMobileMenu">
+              Выгоды
+            </a>
+            <a href="#useful" class="nav-link" @click="closeMobileMenu">
+              Полезное
+            </a>
+            <router-link to="/publications" class="nav-link" @click="closeMobileMenu">
+              Публикации
             </router-link>
             <router-link to="/team" class="nav-link" @click="closeMobileMenu">
               Команда
             </router-link>
-            <router-link to="/impact" class="nav-link" @click="closeMobileMenu">
-              Impact
+            <router-link to="/demo/ontology-editor" class="nav-link" @click="closeMobileMenu">
+              Демо
             </router-link>
-            <router-link to="/contact" class="nav-link" @click="closeMobileMenu">
+            <a href="#contacts" class="nav-link" @click="closeMobileMenu">
               Контакты
-            </router-link>
+            </a>
           </div>
           
           <!-- Мобильное меню -->
@@ -73,14 +73,41 @@
           
           <div class="footer-section">
             <h4>Контакты</h4>
-            <p>Email: contact@ontology.ru</p>
-            <p>Телефон: +7 (495) 000-00-00</p>
+            <div class="footer-contacts">
+              <a href="mailto:hello@example.org" class="footer-contact">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+                hello@example.org
+              </a>
+              <a href="tel:+70000000000" class="footer-contact">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>
+                </svg>
+                +7 000 000-00-00
+              </a>
+              <a href="https://t.me/example" target="_blank" class="footer-contact">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M9 12l2 2 4-4"/>
+                  <path d="M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z"/>
+                </svg>
+                @example
+              </a>
+            </div>
+            <p class="footer-address">Москва, ул. Примерная, 1</p>
+            <p class="footer-hours">Пн–Пт, 10:00–19:00 (Мск)</p>
           </div>
           
           <div class="footer-section">
-            <h4>Партнеры</h4>
-            <p>Университеты</p>
-            <p>ИТ-компании</p>
+            <h4>Разделы</h4>
+            <div class="footer-links">
+              <a href="/#business-benefits" class="footer-link">Выгоды</a>
+              <a href="/#useful" class="footer-link">Полезное</a>
+              <router-link to="/publications" class="footer-link">Публикации</router-link>
+              <router-link to="/team" class="footer-link">Команда</router-link>
+              <a href="/#contacts" class="footer-link">Контакты</a>
+            </div>
           </div>
         </div>
         
@@ -89,15 +116,25 @@
         </div>
       </div>
     </footer>
+
+    <!-- Модальное окно публикации -->
+    <PublicationModal @tag-click="handleModalTagClick" />
   </div>
 </template>
 
 <script>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+import PublicationModal from './components/PublicationModal.vue'
 
 export default {
   name: 'App',
+  components: {
+    PublicationModal
+  },
   setup() {
+    const router = useRouter()
+
     // Состояние мобильного меню
     const isMobileMenuOpen = ref(false)
     
@@ -110,11 +147,20 @@ export default {
     const closeMobileMenu = () => {
       isMobileMenuOpen.value = false
     }
+
+    // Обработчик клика по тегу из модального окна
+    const handleModalTagClick = (tag) => {
+      router.push({
+        path: '/publications',
+        query: { tags: tag }
+      })
+    }
     
     return {
       isMobileMenuOpen,
       toggleMobileMenu,
-      closeMobileMenu
+      closeMobileMenu,
+      handleModalTagClick
     }
   }
 }
@@ -232,6 +278,56 @@ export default {
   text-align: center;
   color: var(--text-secondary);
   font-size: 0.875rem;
+}
+
+.footer-contacts {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.footer-contact {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.2s ease;
+}
+
+.footer-contact:hover {
+  color: var(--primary-color);
+}
+
+.footer-contact svg {
+  flex-shrink: 0;
+  color: var(--primary-color);
+}
+
+.footer-address,
+.footer-hours {
+  color: var(--text-light);
+  font-size: 0.8125rem;
+  margin: 0.25rem 0;
+}
+
+.footer-links {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.footer-link {
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 0.875rem;
+  transition: color 0.2s ease;
+}
+
+.footer-link:hover {
+  color: var(--primary-color);
 }
 
 /* Анимации переходов */

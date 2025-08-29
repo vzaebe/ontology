@@ -1,30 +1,39 @@
-/* Глобальные стили для сайта онтологий */
+/* Глобальные стили для сайта онтологий — WOW Design */
 :root {
-  /* Цветовая палитра в стиле слайда (тёмно-синий → пурпур, горячий розовый акцент) */
-  --primary-color: #ff2f6d;     /* горячий розово-красный (акцент) */
-  --secondary-color: #b21a5b;   /* глубокий магента */
-  --accent-color: #ff5a8f;      /* светлый акцент для бейджей */
-  --success-color: #22c55e;
+  /* Современная цветовая палитра с премиум-градиентами */
+  --primary-color: #6366f1;     /* индиго */
+  --secondary-color: #8b5cf6;   /* фиолетовый */
+  --accent-color: #06b6d4;      /* циан */
+  --success-color: #10b981;
   --warning-color: #f59e0b;
   --error-color: #ef4444;
 
-  /* Нейтральные (тёмная тема в холодных тонах) */
+  /* Нейтральные в тёмной премиум-теме */
   --text-primary: #ffffff;
-  --text-secondary: #c7c9d1;
-  --text-light: #8b8fa1;
-  --bg-primary: #0a0d1f;        /* тёмно-синий */
-  --bg-secondary: #10132a;
-  --bg-tertiary: #171b38;
+  --text-secondary: #e2e8f0;
+  --text-light: #94a3b8;
+  --bg-primary: #0f172a;        /* slate-900 */
+  --bg-secondary: #1e293b;      /* slate-800 */
+  --bg-tertiary: #334155;       /* slate-700 */
+  --border-color: #475569;      /* slate-600 */
 
-  /* Фоновый градиент и декоративные элементы */
-  --gradient-deep: linear-gradient(160deg, #0a0d1f 0%, #120b2a 50%, #2a0b3b 100%);
-  --radial-hotspot: radial-gradient(600px 400px at 18% 14%, rgba(255,47,109,0.35), rgba(255,47,109,0.12) 55%, transparent 65%);
-  --radial-magenta: radial-gradient(900px 700px at 90% 70%, rgba(139,17,89,0.5), transparent 60%);
+  /* Премиум градиенты */
+  --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --gradient-secondary: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+  --gradient-hero: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+  --gradient-glass: linear-gradient(135deg, rgba(255,255,255,0.1), rgba(255,255,255,0.05));
+  --gradient-text: linear-gradient(135deg, #ffffff 0%, #e2e8f0 100%);
+  
+  /* Фоновые эффекты */
+  --radial-primary: radial-gradient(600px at 50% 50%, rgba(102, 126, 234, 0.15), transparent 50%);
+  --radial-secondary: radial-gradient(800px at 80% 20%, rgba(139, 92, 246, 0.1), transparent 50%);
 
-  /* Тени */
-  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.35);
-  --shadow-md: 0 6px 10px -2px rgb(0 0 0 / 0.45), 0 3px 6px -3px rgb(0 0 0 / 0.4);
-  --shadow-lg: 0 18px 32px -10px rgb(0 0 0 / 0.55), 0 10px 18px -10px rgb(0 0 0 / 0.5);
+  /* Улучшенные тени для depth */
+  --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-xl: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  --shadow-glow: 0 0 30px rgba(102, 126, 234, 0.3);
 
   /* Скругления */
   --radius-sm: 0.375rem;
@@ -46,7 +55,8 @@ body {
   font-family: var(--font-sans);
   line-height: 1.6;
   color: var(--text-primary);
-  background: var(--radial-hotspot), var(--radial-magenta), var(--gradient-deep);
+  background: var(--radial-primary), var(--radial-secondary), 
+              linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #334155 100%);
   min-height: 100vh;
   position: relative;
   overflow-x: hidden;
@@ -98,53 +108,103 @@ a:hover {
   color: var(--secondary-color);
 }
 
-/* Кнопки */
+/* Премиум кнопки с эффектами */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.75rem 1.5rem;
+  padding: 0.875rem 2rem;
   border: none;
-  border-radius: var(--radius-md);
-  font-weight: 500;
+  border-radius: var(--radius-lg);
+  font-weight: 600;
   text-decoration: none;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   font-size: 0.875rem;
+  position: relative;
+  overflow: hidden;
 }
 
 .btn-primary {
-  background-color: var(--primary-color);
+  background: var(--gradient-primary);
   color: white;
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+  transition: left 0.5s;
 }
 
 .btn-primary:hover {
-  background-color: #e72764;
-  color: white;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-xl);
+}
+
+.btn-primary:hover::before {
+  left: 100%;
 }
 
 .btn-secondary {
-  background-color: var(--bg-secondary);
+  background: var(--gradient-glass);
   color: var(--text-primary);
-  border: 1px solid var(--text-light);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(10px);
 }
 
 .btn-secondary:hover {
-  background-color: var(--bg-tertiary);
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
 }
 
-/* Карточки */
+.btn:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+.btn:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.btn:focus-visible {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
+
+/* Премиум карточки с glassmorphism */
 .card {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.0)) , var(--bg-secondary);
+  background: var(--gradient-glass);
+  border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-md);
-  padding: 1.5rem;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  padding: 2rem;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
 }
 
 .card:hover {
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: var(--shadow-xl);
+  border-color: rgba(102, 126, 234, 0.3);
 }
 
 /* Контейнеры */

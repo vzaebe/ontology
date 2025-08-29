@@ -5,15 +5,22 @@ import './style.css'
 
 // Импорт компонентов страниц
 import HomePage from './pages/HomePage.vue'
+import OntologiesPage from './pages/OntologiesPage.vue'
+import HowItWorksPage from './pages/HowItWorksPage.vue'
+import WhyBusinessPage from './pages/WhyBusinessPage.vue'
 import ProjectsPage from './pages/ProjectsPage.vue'
 import ResourcesPage from './pages/ResourcesPage.vue'
+import ResourceDetailPage from './pages/ResourceDetailPage.vue'
 import SciencePage from './pages/SciencePage.vue'
-import AuthorsPage from './pages/AuthorsPage.vue'
 import TeamPage from './pages/TeamPage.vue'
 import MemberProfilePage from './pages/MemberProfilePage.vue'
-import ImpactPage from './pages/ImpactPage.vue'
+import PartnersPage from './pages/PartnersPage.vue'
 import ContactPage from './pages/ContactPage.vue'
+import ContactsPage from './pages/ContactsPage.vue'
 import PublicationPage from './pages/PublicationPage.vue'
+import PublicationsPage from './pages/PublicationsPage.vue'
+import FAQPage from './pages/FAQPage.vue'
+import OntologyDemoPage from './pages/OntologyDemoPage.vue'
 
 // Конфигурация роутера
 const router = createRouter({
@@ -26,34 +33,22 @@ const router = createRouter({
       meta: { title: 'Главная - Ontology.ru' }
     },
     {
-      path: '/pub/:id',
-      name: 'publication',
-      component: PublicationPage,
-      meta: { title: 'Публикация - Ontology.ru' }
+      path: '/ontologies',
+      name: 'ontologies',
+      component: OntologiesPage,
+      meta: { title: 'Онтологии - Ontology.ru' }
     },
     {
-      path: '/impact',
-      name: 'impact',
-      component: ImpactPage,
-      meta: { title: 'Impact - Ontology.ru' }
+      path: '/how-it-works',
+      name: 'how-it-works',
+      component: HowItWorksPage,
+      meta: { title: 'Как это работает - Ontology.ru' }
     },
     {
-      path: '/contact',
-      name: 'contact',
-      component: ContactPage,
-      meta: { title: 'Контакты - Ontology.ru' }
-    },
-    {
-      path: '/projects',
-      name: 'projects',
-      component: ProjectsPage,
-      meta: { title: 'Проекты - Ontology.ru' }
-    },
-    {
-      path: '/resources',
-      name: 'resources',
-      component: ResourcesPage,
-      meta: { title: 'Полезные ссылки - Ontology.ru' }
+      path: '/why-business',
+      name: 'why-business',
+      component: WhyBusinessPage,
+      meta: { title: 'Зачем бизнесу и IT - Ontology.ru' }
     },
     {
       path: '/science',
@@ -62,23 +57,76 @@ const router = createRouter({
       meta: { title: 'Наука - Ontology.ru' }
     },
     {
-      path: '/authors',
-      name: 'authors',
-      component: AuthorsPage,
-      meta: { title: 'Авторы - Ontology.ru' }
-    }
-    ,
+      path: '/publications',
+      name: 'publications',
+      component: PublicationsPage,
+      meta: { title: 'Публикации - Ontology.ru' }
+    },
+    {
+      path: '/publications/:slug',
+      name: 'publication',
+      component: PublicationPage,
+      meta: { title: 'Публикация - Ontology.ru' }
+    },
+    {
+      path: '/projects',
+      name: 'projects',
+      component: ProjectsPage,
+      meta: { title: 'Кейсы и результаты - Ontology.ru' }
+    },
+    {
+      path: '/resources',
+      name: 'resources',
+      component: ResourcesPage,
+      meta: { title: 'Полезные ссылки - Ontology.ru' }
+    },
+    {
+      path: '/resources/:id',
+      name: 'resource-detail',
+      component: ResourceDetailPage,
+      meta: { title: 'Ресурс - Ontology.ru' }
+    },
     {
       path: '/team',
       name: 'team',
       component: TeamPage,
-      meta: { title: 'Команда - Ontology.ru' }
+      meta: { title: 'Команда и авторы - Ontology.ru' }
     },
     {
       path: '/team/:slug',
       name: 'member',
       component: MemberProfilePage,
       meta: { title: 'Профиль участника - Ontology.ru' }
+    },
+    {
+      path: '/partners',
+      name: 'partners',
+      component: PartnersPage,
+      meta: { title: 'Партнеры - Ontology.ru' }
+    },
+    {
+      path: '/contact',
+      name: 'contact',
+      component: ContactPage,
+      meta: { title: 'Контакты - Ontology.ru' }
+    },
+    {
+      path: '/contacts',
+      name: 'contacts',
+      component: ContactsPage,
+      meta: { title: 'Контакты - Ontology.ru' }
+    },
+    {
+      path: '/faq',
+      name: 'faq',
+      component: FAQPage,
+      meta: { title: 'FAQ - Ontology.ru' }
+    },
+    {
+      path: '/demo/ontology-editor',
+      name: 'ontology-demo',
+      component: OntologyDemoPage,
+      meta: { title: 'Демо редактор онтологий - Ontology.ru' }
     }
   ]
 })

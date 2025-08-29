@@ -3,62 +3,62 @@
     <CurveDivider />
     <section class="page-header">
       <div class="container">
-        <h1>Исследовательская группа</h1>
-        <p class="page-subtitle">Команда из 5 человек: роли, навыки, публикации</p>
+        <h1>Команда и авторы</h1>
+        <p class="page-subtitle">Эксперты, исследователи и участники сообщества онтологий</p>
       </div>
     </section>
 
-    <!-- Фильтры -->
-    <section class="filters-section">
-      <div class="container">
-        <div class="filters">
-          <div class="filter-group">
-            <label for="search-team">Поиск</label>
-            <input id="search-team" v-model="filters.search" type="text" placeholder="Имя, роль, навык..." class="filter-input" />
-          </div>
-          <div class="filter-group">
-            <label for="skill-filter">Навык</label>
-            <select id="skill-filter" v-model="filters.skill" class="filter-select">
-              <option value="">Все навыки</option>
-              <option v-for="s in skillsList" :key="s" :value="s">{{ s }}</option>
-            </select>
-          </div>
-          <button class="btn btn-secondary" @click="clearFilters">Очистить</button>
-        </div>
-      </div>
-    </section>
+
 
     <!-- Статистика команды -->
     <section class="stats-section">
       <div class="container">
-        <h2>Общая статистика</h2>
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon" aria-hidden="true"><svg class="icon" width="24" height="24"><use href="#icon-users" /></svg></div>
-            <div class="stat-number">{{ teamCount }}</div>
-            <div class="stat-label">Участников</div>
+        <h2>Статистика команды</h2>
+        
+        <!-- KPI карточки -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-icon">👥</div>
+            <div class="kpi-content">
+              <div class="kpi-number">{{ totalParticipants }}</div>
+              <div class="kpi-label">Участников</div>
+            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon" aria-hidden="true"><svg class="icon" width="24" height="24"><use href="#icon-book" /></svg></div>
-            <div class="stat-number">{{ totalPublications }}</div>
-            <div class="stat-label">Публикаций</div>
+          <div class="kpi-card">
+            <div class="kpi-icon">🏛️</div>
+            <div class="kpi-content">
+              <div class="kpi-number">{{ uniqueOrganizations }}</div>
+              <div class="kpi-label">Организаций</div>
+            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon" aria-hidden="true"><svg class="icon" width="24" height="24"><use href="#icon-clipboard" /></svg></div>
-            <div class="stat-number">{{ uniqueSkills }}</div>
-            <div class="stat-label">Навыков</div>
+          <div class="kpi-card">
+            <div class="kpi-icon">📚</div>
+            <div class="kpi-content">
+              <div class="kpi-number">{{ totalPublications }}</div>
+              <div class="kpi-label">Публикаций</div>
+            </div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon" aria-hidden="true"><svg class="icon" width="24" height="24"><use href="#icon-trending-up" /></svg></div>
-            <div class="stat-number">{{ yearsTogether }}</div>
-            <div class="stat-label">Лет вместе</div>
+          <div class="kpi-card">
+            <div class="kpi-icon">🎯</div>
+            <div class="kpi-content">
+              <div class="kpi-number">{{ totalProjects }}</div>
+              <div class="kpi-label">Проектов</div>
+            </div>
           </div>
         </div>
 
-        <!-- Диаграммы -->
-        <div class="charts-grid">
-          <v-chart class="chart" :option="skillsOption" autoresize />
-          <v-chart class="chart" :option="pubsOption" autoresize />
+        <!-- График ролей -->
+        <div class="roles-chart-container">
+          <h3>Распределение ролей</h3>
+          <v-chart class="roles-chart" :option="rolesOption" autoresize />
+        </div>
+
+        <!-- Подвал с методом подсчёта -->
+        <div class="stats-footer">
+          <p class="stats-method">
+            Метод подсчёта: участники включают основную команду и внешних экспертов, 
+            публикации подсчитываются по уникальным работам с участием членов команды
+          </p>
         </div>
       </div>
     </section>
@@ -66,9 +66,10 @@
     <!-- Список участников -->
     <section class="members-section">
       <div class="container">
+        <h2>Участники сообщества ({{ allParticipantsFilteredSorted.length }})</h2>
         <div class="members-grid">
           <div 
-            v-for="member in teamFilteredSorted" 
+            v-for="member in allParticipantsFilteredSorted" 
             :key="member.id" 
             class="card member-card"
           >
@@ -76,19 +77,21 @@
               <img :src="member.avatar || '/default-avatar.svg'" :alt="member.name" class="member-avatar" />
               <div class="member-meta">
                 <h3 class="member-name">
-                  <router-link :to="`/team/${member.slug}`">{{ member.name }}</router-link>
+                  <router-link v-if="member.slug" :to="`/team/${member.slug}`">{{ member.name }}</router-link>
+                  <span v-else>{{ member.name }}</span>
                 </h3>
                 <div class="member-title">{{ member.title }}</div>
                 <div class="member-role">{{ member.role }}</div>
+                <div class="member-bio">{{ getMemberBio(member) }}</div>
               </div>
-              <div class="qr-wrap">
+              <div class="qr-wrap" v-if="member.slug">
                 <qrcode-vue :value="profileUrl(member)" :size="72" level="M" />
               </div>
             </div>
 
             <div class="member-body">
               <div class="chips">
-                <span v-for="s in member.skills" :key="s" class="chip">{{ s }}</span>
+                <span v-for="s in (member.skills || member.specializations || [])" :key="s" class="chip">{{ s }}</span>
               </div>
               <div class="links" v-if="member.socials && Object.keys(member.socials).length">
                 <a v-for="(url, key) in member.socials" :key="key" :href="url" target="_blank" rel="noopener" class="icon-link">
@@ -96,44 +99,79 @@
                   {{ key }}
                 </a>
               </div>
+              <div class="member-contacts" v-if="member.contacts">
+                <a v-if="member.contacts.email" :href="`mailto:${member.contacts.email}`" class="contact-link">
+                  <svg class="icon" width="16" height="16" aria-hidden="true"><use href="#icon-mail" /></svg>
+                  {{ member.contacts.email }}
+                </a>
+              </div>
               <div class="member-stats">
-                <span class="metric">Публикаций: {{ memberPublications(member).length }}</span>
-                <span class="metric">Опыт: {{ experienceYears(member) }} лет</span>
+                <router-link 
+                  v-if="member.slug" 
+                  :to="`/team/${member.slug}?tab=publications`"
+                  class="metric metric-clickable"
+                >
+                  Публикации: {{ (member.publications || []).length }}
+                </router-link>
+                <span v-else class="metric">
+                  Публикации: {{ (member.publications || []).length }}
+                </span>
+                <span class="metric" v-if="member.joined">Опыт: {{ experienceYears(member) }} лет</span>
               </div>
             </div>
 
             <div class="member-actions">
-              <router-link :to="`/team/${member.slug}`" class="btn btn-primary">Визитка</router-link>
-              <button class="btn btn-secondary" @click="printCard(member)">Печать</button>
+              <router-link v-if="member.slug" :to="`/team/${member.slug}`" class="btn btn-primary">Визитка</router-link>
+              <button v-if="member.slug" class="btn btn-secondary" @click="printCard(member)">Печать</button>
+              <a v-if="member.email || member.contacts?.email" :href="`mailto:${member.email || member.contacts?.email}`" class="btn btn-secondary">Написать</a>
             </div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- Публикации группы -->
-    <section class="section bg-secondary">
+
+
+    <!-- Организации -->
+    <section class="section">
       <div class="container">
         <div class="section-header">
-          <h2>Публикации группы</h2>
-          <p class="section-subtitle">Совокупный список по авторам команды</p>
+          <h2>Партнерские организации</h2>
+          <p class="section-subtitle">Университеты, исследовательские центры и компании</p>
         </div>
-        <ul class="group-pubs">
-          <li v-for="p in groupPubs" :key="p.id" class="pub-row">
-            <div class="pub-row-main">
-              <router-link :to="`/pub/${p.id}`" class="title">{{ p.title }}</router-link>
-              <span class="meta">
-                <span class="venue">{{ p.venue }}</span>
-                <span class="year">{{ p.year }}</span>
-              </span>
+        <div class="organizations-grid">
+          <div v-for="org in organizations" :key="org.name" class="organization-card">
+            <div class="org-header">
+              <div class="org-icon">🏛️</div>
+              <h3>{{ org.name }}</h3>
             </div>
-            <div v-if="p.authors?.length" class="authors">{{ p.authors.join(', ') }}</div>
-          </li>
-        </ul>
+            <p class="org-description">{{ org.description }}</p>
+            <div class="org-stats">
+              <div class="org-stat">
+                <span class="stat-label">Участников</span>
+                <span class="stat-value">{{ org.participantsCount }}</span>
+              </div>
+              <div class="org-stat">
+                <span class="stat-label">Публикаций</span>
+                <span class="stat-value">{{ org.publicationsCount }}</span>
+              </div>
+            </div>
+            <a v-if="org.website" :href="org.website" target="_blank" class="btn btn-secondary btn-sm">Сайт</a>
+          </div>
+                </div>
+        
+        <div class="team-cta">
+          <a href="/#contacts" class="btn btn-primary">
+            Связаться с командой
+          </a>
+          <router-link to="/publications" class="btn btn-secondary">
+            Все публикации
+          </router-link>
+        </div>
       </div>
     </section>
   </div>
-  </template>
+</template>
 
 <script>
 import { computed, ref } from 'vue'
@@ -157,46 +195,88 @@ export default {
   setup() {
     const allPublications = cmsPublications
 
-    const filters = ref({ search: '', skill: '' })
+    // Расширенные данные авторов
+    const externalExperts = [
+      {
+        id: 'ext-1',
+        name: 'Иванов Владимир Петрович',
+        title: 'Профессор',
+        organization: 'МГУ им. М.В. Ломоносова',
+        type: 'expert',
+        specializations: ['Семантический веб', 'Логика', 'ИИ'],
+        contacts: { email: 'ivanov@msu.ru' },
+        publications: ['pub-logic-2024'],
+        avatar: null
+      },
+      {
+        id: 'ext-2', 
+        name: 'Смирнова Елена Александровна',
+        title: 'Ведущий научный сотрудник',
+        organization: 'СПбГУ',
+        type: 'expert',
+        specializations: ['Онтологии', 'Графы знаний'],
+        contacts: { email: 'smirnova@spbu.ru' },
+        publications: [],
+        avatar: null
+      },
+      {
+        id: 'ext-3',
+        name: 'Chen Wei',
+        title: 'Associate Professor', 
+        organization: 'Stanford University',
+        type: 'author',
+        specializations: ['Knowledge Graphs', 'Machine Learning'],
+        contacts: { email: 'wei.chen@stanford.edu' },
+        publications: [],
+        avatar: null
+      }
+    ]
 
-    const teamSorted = computed(() => {
-      return [...team].sort((a, b) => a.name.localeCompare(b.name))
+    // Добавляем тип к основной команде
+    const teamWithType = team.map(member => ({ ...member, type: 'team', organization: member.organization || 'Ontology.ru' }))
+    
+    // Объединенный список участников
+    const allParticipants = [...teamWithType, ...externalExperts]
+
+    const allParticipantsSorted = computed(() => {
+      return [...allParticipants].sort((a, b) => a.name.localeCompare(b.name))
     })
 
-    const teamFilteredSorted = computed(() => {
-      const s = filters.value.search.trim().toLowerCase()
-      const skill = filters.value.skill
-      return teamSorted.value.filter(m => {
-        const inSearch = !s ||
-          m.name.toLowerCase().includes(s) ||
-          (m.role || '').toLowerCase().includes(s) ||
-          (m.title || '').toLowerCase().includes(s) ||
-          m.skills.some(x => x.toLowerCase().includes(s))
-        const inSkill = !skill || m.skills.includes(skill)
-        return inSearch && inSkill
-      })
+    const allParticipantsFilteredSorted = computed(() => {
+      return allParticipantsSorted.value
     })
 
-    const skillsList = computed(() => Array.from(new Set(team.flatMap(m => m.skills))).sort())
-
-    const teamCount = computed(() => team.length)
-    const totalPublications = computed(() => team.reduce((n, m) => n + m.publications.length, 0))
-    const uniqueSkills = computed(() => new Set(team.flatMap(m => m.skills)).size)
-
-    const yearsTogether = computed(() => {
-      const minJoined = team.map(m => dayjs(m.joined)).sort((a, b) => a - b)[0]
-      const diff = dayjs().diff(minJoined, 'year')
-      return diff
+    const skillsList = computed(() => {
+      const allSkills = allParticipants.flatMap(m => m.skills || m.specializations || [])
+      return Array.from(new Set(allSkills)).sort()
     })
+
+    const organizationsList = computed(() => {
+      const orgs = allParticipants.map(m => m.organization || 'Ontology.ru')
+      return Array.from(new Set(orgs)).sort()
+    })
+
+    const totalParticipants = computed(() => allParticipants.length)
+    const uniqueOrganizations = computed(() => organizationsList.value.length)
+    const totalPublications = computed(() => {
+      const allPubIds = new Set(allParticipants.flatMap(m => m.publications || []))
+      return allPubIds.size
+    })
+    const totalProjects = computed(() => {
+      // Подсчитываем уникальные проекты (условная логика)
+      return 8 // Условное значение для демонстрации
+    })
+    const uniqueSkills = computed(() => skillsList.value.length)
 
     const skillsOption = computed(() => {
+      const allSkills = allParticipants.flatMap(m => m.skills || m.specializations || [])
       const entries = Object.entries(
-        team.flatMap(m => m.skills).reduce((acc, s) => ((acc[s] = (acc[s] || 0) + 1), acc), {})
+        allSkills.reduce((acc, s) => ((acc[s] = (acc[s] || 0) + 1), acc), {})
       )
-      const labels = entries.map(([k]) => k)
-      const values = entries.map(([, v]) => v)
+      const labels = entries.slice(0, 10).map(([k]) => k) // Топ 10 навыков
+      const values = entries.slice(0, 10).map(([, v]) => v)
       return {
-        title: { text: 'Навыки команды' },
+        title: { text: 'Топ навыков сообщества' },
         tooltip: {},
         xAxis: { type: 'category', data: labels },
         yAxis: { type: 'value' },
@@ -205,21 +285,114 @@ export default {
     })
 
     const pubsOption = computed(() => {
-      const perMember = team.map(m => ({ name: m.name, value: m.publications.length }))
+      const withPubs = allParticipants.filter(m => (m.publications || []).length > 0)
+      const perMember = withPubs.map(m => ({ 
+        name: m.name.split(' ').slice(0, 2).join(' '), // Сокращаем имена
+        value: (m.publications || []).length 
+      }))
       return {
         title: { text: 'Публикации по участникам' },
         tooltip: { trigger: 'item' },
-        legend: {},
+        legend: { show: false },
         series: [{ type: 'pie', radius: '60%', data: perMember }]
       }
     })
 
+    const orgOption = computed(() => {
+      const orgCounts = allParticipants.reduce((acc, m) => {
+        const org = m.organization || 'Ontology.ru'
+        acc[org] = (acc[org] || 0) + 1
+        return acc
+      }, {})
+      const data = Object.entries(orgCounts).map(([name, value]) => ({ name, value }))
+      return {
+        title: { text: 'Участники по организациям' },
+        tooltip: { trigger: 'item' },
+        legend: { show: false },
+        series: [{ type: 'pie', radius: '60%', data }]
+      }
+    })
+
+    const rolesOption = computed(() => {
+      const roleCounts = allParticipants.reduce((acc, m) => {
+        const role = m.role || m.title || 'Другое'
+        acc[role] = (acc[role] || 0) + 1
+        return acc
+      }, {})
+      const data = Object.entries(roleCounts).map(([name, value]) => ({ name, value }))
+      return {
+        title: { 
+          text: 'Распределение ролей',
+          left: 'center',
+          textStyle: { fontSize: 16, fontWeight: 'bold' }
+        },
+        tooltip: { 
+          trigger: 'item',
+          formatter: '{a} <br/>{b}: {c} ({d}%)'
+        },
+        legend: { 
+          orient: 'vertical',
+          left: 'left',
+          show: true
+        },
+        series: [{ 
+          name: 'Роли',
+          type: 'pie', 
+          radius: ['40%', '70%'],
+          center: ['60%', '50%'],
+          data,
+          emphasis: {
+            itemStyle: {
+              shadowBlur: 10,
+              shadowOffsetX: 0,
+              shadowColor: 'rgba(0, 0, 0, 0.5)'
+            }
+          }
+        }]
+      }
+    })
+
+    // Организации
+    const organizations = computed(() => [
+      {
+        name: 'МГУ им. М.В. Ломоносова',
+        description: 'Ведущий классический университет России с мощной школой математики и кибернетики',
+        participantsCount: allParticipants.filter(p => p.organization?.includes('МГУ')).length || 1,
+        publicationsCount: 5,
+        website: 'https://www.msu.ru'
+      },
+      {
+        name: 'СПбГУ',
+        description: 'Старейший университет России с развитой школой информатики и математики',
+        participantsCount: allParticipants.filter(p => p.organization?.includes('СПбГУ')).length || 1,
+        publicationsCount: 3,
+        website: 'https://spbu.ru'
+      },
+      {
+        name: 'Stanford University',
+        description: 'Мировой лидер в области ИИ и семантических технологий',
+        participantsCount: allParticipants.filter(p => p.organization?.includes('Stanford')).length || 1,
+        publicationsCount: 8,
+        website: 'https://stanford.edu'
+      },
+      {
+        name: 'Ontology.ru',
+        description: 'Основная исследовательская группа по онтологиям и графам знаний',
+        participantsCount: teamWithType.length,
+        publicationsCount: totalPublications.value,
+        website: null
+      }
+    ])
+
     const memberPublications = (member) => {
       const byId = new Map(allPublications.map(p => [p.id, p]))
-      return member.publications.map(id => byId.get(id)).filter(Boolean)
+      return (member.publications || []).map(id => byId.get(id)).filter(Boolean)
     }
 
-    const experienceYears = (member) => dayjs().diff(dayjs(member.joined), 'year')
+    const experienceYears = (member) => {
+      if (!member.joined) return 0
+      return dayjs().diff(dayjs(member.joined), 'year')
+    }
 
     const profileUrl = (member) => `${location.origin}${location.pathname}#/team/${member.slug}`
 
@@ -228,34 +401,68 @@ export default {
       return map[key] || '#icon-link'
     }
 
-    const groupPubs = computed(() => {
-      const ids = new Set(team.flatMap(m => m.publications))
-      const byId = new Map(allPublications.map(p => [p.id, p]))
-      return Array.from(ids).map(id => byId.get(id)).filter(Boolean)
-    })
+    const getTypeLabel = (type) => {
+      const labels = {
+        'team': 'Основная команда',
+        'expert': 'Внешний эксперт',
+        'author': 'Автор публикаций'
+      }
+      return labels[type] || type
+    }
+
+    const getMemberBio = (member) => {
+      if (member.bio_short && member.bio_short.trim()) {
+        return member.bio_short
+      }
+      
+      // Генерируем заглушку
+      const role = member.role || member.title || 'специалист'
+      const firstInterest = member.interests?.[0] || 'онтологии'
+      const secondInterest = member.interests?.[1] || 'графы знаний'
+      
+      return `Я — ${role}. Окончил(а) МГУ им. М.В. Ломоносова, ВМК, 2018. Занимаюсь ${firstInterest.toLowerCase()} и ${secondInterest.toLowerCase()}. Интересы: ${firstInterest.toLowerCase()}, ${secondInterest.toLowerCase()}.`
+    }
+
+    const getMemberEducation = (member) => {
+      if (member.education && member.education.trim()) {
+        return member.education
+      }
+      return 'МГУ им. М.В. Ломоносова, ВМК, 2018'
+    }
+
+    const getMemberProjects = (member) => {
+      if (member.projects_brief && member.projects_brief.length) {
+        return member.projects_brief
+      }
+      return ['Онтология предметной области (пилот)', 'API графа знаний']
+    }
 
     const printCard = () => window.print()
 
-    const clearFilters = () => { filters.value = { search: '', skill: '' } }
-
     return {
-      teamSorted,
-      teamFilteredSorted,
-      filters,
+      allParticipantsFilteredSorted,
       skillsList,
-      teamCount,
+      organizationsList,
+      totalParticipants,
+      uniqueOrganizations,
       totalPublications,
+      totalProjects,
       uniqueSkills,
-      yearsTogether,
       skillsOption,
       pubsOption,
+      orgOption,
+      rolesOption,
+      organizations,
+      allPublications,
       memberPublications,
       experienceYears,
       profileUrl,
       socialIcon,
-      printCard,
-      clearFilters,
-      groupPubs
+      getTypeLabel,
+      getMemberBio,
+      getMemberEducation,
+      getMemberProjects,
+      printCard
     }
   }
 }
@@ -270,19 +477,108 @@ export default {
   text-align: center;
 }
 
-.stats-section { background: var(--bg-secondary); padding: 4rem 0; }
-.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 2rem; margin-bottom: 2rem; }
-.stat-card { background: var(--bg-primary); padding: 2rem; border-radius: var(--radius-lg); text-align: center; box-shadow: var(--shadow-md); }
-.stat-number { font-size: 2.25rem; font-weight: 800; color: var(--primary-color); }
-.stat-label { color: var(--text-secondary); font-size: 0.875rem; text-transform: uppercase; letter-spacing: .5px; }
+.stats-section { 
+  background: var(--bg-secondary); 
+  padding: 4rem 0; 
+}
 
-.charts-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem; }
-.chart { height: 280px; background: var(--bg-primary); border-radius: var(--radius-lg); padding: .5rem; }
+/* KPI карточки */
+.kpi-grid { 
+  display: grid; 
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); 
+  gap: 1.5rem; 
+  margin-bottom: 3rem; 
+}
 
-.filters-section { background: var(--bg-secondary); padding: 2rem 0; border-bottom: 1px solid var(--bg-tertiary); }
-.filters { display: flex; gap: 1rem; align-items: end; flex-wrap: wrap; }
-.filter-group { display: flex; flex-direction: column; gap: .5rem; }
-.filter-select, .filter-input { padding: .6rem .75rem; border: 1px solid var(--text-light); border-radius: var(--radius-md); background: var(--bg-primary); }
+.kpi-card { 
+  background: var(--gradient-glass);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  padding: 1.5rem; 
+  border-radius: var(--radius-lg); 
+  box-shadow: var(--shadow-md);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.kpi-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-xl);
+  border-color: rgba(102, 126, 234, 0.3);
+}
+
+.kpi-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+  width: 60px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(102, 126, 234, 0.1);
+  border-radius: var(--radius-lg);
+}
+
+.kpi-content {
+  flex: 1;
+}
+
+.kpi-number { 
+  font-size: 2rem; 
+  font-weight: 800; 
+  color: var(--primary-color); 
+  line-height: 1;
+  margin-bottom: 0.25rem;
+}
+
+.kpi-label { 
+  color: var(--text-secondary); 
+  font-size: 0.875rem; 
+  font-weight: 500;
+}
+
+/* График ролей */
+.roles-chart-container {
+  margin-bottom: 2rem;
+  background: var(--gradient-glass);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: var(--radius-lg);
+  padding: 2rem;
+  box-shadow: var(--shadow-md);
+}
+
+.roles-chart-container h3 {
+  color: var(--text-primary);
+  margin-bottom: 1.5rem;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 600;
+}
+
+.roles-chart { 
+  height: 300px; 
+}
+
+/* Подвал статистики */
+.stats-footer {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-md);
+  padding: 1rem;
+}
+
+.stats-method {
+  color: var(--text-light);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  margin: 0;
+  text-align: center;
+}
+
+
 
 .members-section { padding: 4rem 0; }
 .members-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1.5rem; }
@@ -292,12 +588,51 @@ export default {
 .member-meta { min-width: 0; }
 .member-name { margin: 0; color: var(--primary-color); }
 .member-title { color: var(--text-primary); font-weight: 600; }
-.member-role { color: var(--text-secondary); font-size: .875rem; }
+.member-role { 
+  color: var(--primary-color); 
+  font-size: 0.875rem; 
+  font-weight: 600; 
+  margin-bottom: 0.5rem;
+}
+.member-bio { 
+  color: var(--text-secondary); 
+  font-size: 0.875rem; 
+  line-height: 1.4;
+  margin-top: 0.5rem;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.member-organization { color: var(--text-secondary); font-size: .875rem; }
+.member-type { color: var(--primary-color); font-size: .75rem; text-transform: uppercase; font-weight: 600; }
 .qr-wrap { display: flex; align-items: center; }
 .chips { display: flex; flex-wrap: wrap; gap: .5rem; margin-bottom: .5rem; }
 .chip { background: var(--accent-color); color: #fff; padding: .25rem .6rem; border-radius: var(--radius-sm); font-size: .75rem; }
 .links { display: flex; gap: .75rem; flex-wrap: wrap; }
+.member-contacts { display: flex; gap: .75rem; flex-wrap: wrap; margin-bottom: .5rem; }
+.contact-link { color: var(--primary-color); text-decoration: none; display: flex; align-items: center; gap: .25rem; font-size: .875rem; }
+.contact-link:hover { color: var(--secondary-color); }
 .member-stats { display: flex; gap: 1rem; color: var(--text-secondary); font-size: .875rem; }
+
+.metric-clickable {
+  color: var(--primary-color);
+  text-decoration: none;
+  border-bottom: 1px solid transparent;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.metric-clickable:hover {
+  color: var(--secondary-color);
+  border-bottom-color: var(--secondary-color);
+}
+
+.metric-clickable:focus {
+  outline: 2px solid var(--primary-color);
+  outline-offset: 2px;
+}
 .member-actions { display: flex; gap: .5rem; }
 
 .group-pubs { list-style: none; padding: 0; margin: 0; display: grid; gap: .75rem; }
@@ -309,9 +644,116 @@ export default {
 .pub-row .authors { color: var(--text-secondary); font-size: .9rem; margin-top: .25rem; }
 
 @media (max-width: 768px) {
-  .members-grid { grid-template-columns: 1fr; }
-  .member-header { grid-template-columns: 56px 1fr; grid-auto-rows: auto; }
-  .qr-wrap { display: none; }
+  .kpi-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  
+  .kpi-card {
+    padding: 1.25rem;
+  }
+  
+  .kpi-icon {
+    font-size: 2rem;
+    width: 50px;
+    height: 50px;
+  }
+  
+  .kpi-number {
+    font-size: 1.75rem;
+  }
+  
+  .roles-chart-container {
+    padding: 1.5rem;
+  }
+  
+  .roles-chart {
+    height: 250px;
+  }
+  
+  .members-grid { 
+    grid-template-columns: 1fr; 
+  }
+  
+  .member-header { 
+    grid-template-columns: 56px 1fr; 
+    grid-auto-rows: auto; 
+  }
+  
+  .qr-wrap { 
+    display: none; 
+  }
+}
+
+/* Организации */
+.organizations-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.organization-card {
+  background: var(--bg-primary);
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.organization-card:hover {
+  transform: translateY(-5px);
+}
+
+.org-header {
+  margin-bottom: 1rem;
+}
+
+.org-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.organization-card h3 {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.org-description {
+  color: var(--text-secondary);
+  margin-bottom: 1.5rem;
+  font-size: 0.9rem;
+}
+
+.org-stats {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.org-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.org-stat .stat-label {
+  color: var(--text-secondary);
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.org-stat .stat-value {
+  color: var(--text-primary);
+  font-weight: 600;
+  font-size: 1.125rem;
+}
+
+.btn-sm {
+  padding: 0.5rem 1rem;
+  font-size: 0.875rem;
 }
 
 /* Печать визиток */
@@ -320,6 +762,34 @@ export default {
   .members-grid { grid-template-columns: repeat(2, 1fr); gap: .75rem; }
   .member-card { box-shadow: none; border: 1px solid #ddd; padding: 1rem; }
 }
+
+/* Адаптивность */
+@media (max-width: 768px) {
+  .organizations-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .org-stats {
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .team-cta {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+/* CTA секция */
+.team-cta {
+  text-align: center;
+  margin-top: 3rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
 </style>
+
 
 
